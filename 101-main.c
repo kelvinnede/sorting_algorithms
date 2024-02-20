@@ -1,56 +1,76 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "sort.h"
 
 /**
- * create_listint - Creates a doubly linked list from an array of integers
+ * swap_nodes - Swaps two nodes in a doubly linked list
+ * @list: Double pointer to the head of the list
+ * @prev: Double pointer to the previous node
+ * @next: Double pointer to the next node
  *
- * @array: Array to convert to a doubly linked list
- * @size: Size of the array
- *
- * Return: Pointer to the first element of the created list. NULL on failure
+ * Description: This function swaps two nodes in a doubly linked list.
  */
-listint_t *create_listint(const int *array, size_t size)
+void swap_nodes(listint_t **list, listint_t **prev, listint_t **next)
 {
-    listint_t *list;
-    listint_t *node;
-    int *tmp;
+	listint_t *tmp_prev, *tmp_next;
 
-    list = NULL;
-    while (size--)
-    {
-        node = malloc(sizeof(*node));
-        if (!node)
-            return (NULL);
-        tmp = (int *)&node->n;
-        *tmp = array[size];
-        node->next = list;
-        node->prev = NULL;
-        list = node;
-        if (list->next)
-            list->next->prev = list;
-    }
-    return (list);
+	tmp_prev = (*prev)->prev;
+	tmp_next = (*next)->next;
+
+	if (tmp_prev)
+		tmp_prev->next = (*next);
+	else
+		*list = (*next);
+
+	if (tmp_next)
+		tmp_next->prev = (*prev);
+
+	(*prev)->next = tmp_next;
+	(*prev)->prev = (*next);
+	(*next)->next = (*prev);
+	(*next)->prev = tmp_prev;
 }
 
 /**
- * main - Entry point
+ * cocktail_sort_list - Sorts a doubly linked list using Cocktail Shaker sort
+ * @list: Double pointer to the head of the list
  *
- * Return: Always 0
+ * Description: This function sorts a doubly linked list of integers
+ *              in ascending order using the Cocktail Shaker sort algorithm.
+ *              It prints the list after each time two elements are swapped.
  */
-int main(void)
+void cocktail_sort_list(listint_t **list)
 {
-    listint_t *list;
-    int array[] = {19, 48, 99, 71, 13, 52, 96, 73, 86, 7};
-    size_t n = sizeof(array) / sizeof(array[0]);
+	listint_t *start = NULL, *end = NULL;
+	int swapped;
 
-    list = create_listint(array, n);
-    if (!list)
-        return (1);
-    print_list(list);
-    printf("\n");
-    cocktail_sort_list(&list);
-    printf("\n");
-    print_list(list);
-    return (0);
+	if (!list || !(*list) || !((*list)->next))
+		return;
+
+	do {
+		swapped = 0;
+		start = (*list);
+		while (start->next != end) {
+			if (start->n > start->next->n) {
+				swap_nodes(list, &start, &(start->next));
+				swapped = 1;
+				print_list((*list));
+			} else {
+				start = start->next;
+			}
+		}
+
+		if (!swapped)
+			break;
+
+		swapped = 0;
+		end = start;
+		while (start->prev != NULL) {
+			if (start->n < start->prev->n) {
+				swap_nodes(list, &(start->prev), &start);
+				swapped = 1;
+				print_list((*list));
+			} else {
+				start = start->prev;
+			}
+		}
+	} while (swapped);
 }
