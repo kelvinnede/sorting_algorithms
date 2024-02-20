@@ -25,12 +25,8 @@ void bitonic_merge(int *array, size_t start, size_t size, int dir)
 			if ((array[i] > array[i + k]) == dir)
 			{
 				int tmp = array[i];
-
 				array[i] = array[i + k];
 				array[i + k] = tmp;
-				printf("Result [2/%lu] (%s):\n", size * 2,
-						dir == 1 ? "UP" : "DOWN");
-				print_array(array + start, size);
 			}
 		}
 
@@ -61,7 +57,7 @@ void bitonic_sort(int *array, size_t size)
 			{
 				int dir = (i / k) % 2 == 0 ? 1 : 0;
 
-				bitonic_merge(array, i, k / 2, dir);
+				bitonic_merge(array, i, k, dir);
 			}
 		}
 	}
