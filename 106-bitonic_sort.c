@@ -1,94 +1,68 @@
-#include "sort.h"
 #include <stdio.h>
 #include <stdlib.h>
-/**
- * swap - change two values in ascending or descending order
- * @arr: array
- * @item1: item one
- * @item2: item two
- * @order: 1: ascending order, 0 descending order
- */
-void swap(int arr[], int item1, int item2, int order)
-{
-	int temp;
+#include "sort.h"
 
-	if (order == (arr[item1] > arr[item2]))
+/**
+ * bitonic_merge - merge the subarrays in ascending or descending order
+ * @array: array to sort
+ * @start: starting index of the subarray
+ * @size: size of the subarray
+ * @dir: direction of sorting (1 for ascending, 0 for descending)
+ */
+void bitonic_merge(int *array, size_t start, size_t size, int dir)
+{
+	if (size > 1)
 	{
-		temp = arr[item1];
-		arr[item1] = arr[item2];
-		arr[item2] = temp;
+		size_t k = size / 2;
+		size_t i;
+
+		printf("Merging [%lu/%lu] (%s):\n", size, size * 2,
+				dir == 1 ? "UP" : "DOWN");
+		print_array(array + start, size);
+
+		for (i = start; i < start + k; i++)
+		{
+			if ((array[i] > array[i + k]) == dir)
+			{
+				int tmp = array[i];
+
+				array[i] = array[i + k];
+				array[i + k] = tmp;
+				printf("Result [2/%lu] (%s):\n", size * 2,
+						dir == 1 ? "UP" : "DOWN");
+				print_array(array + start, size);
+			}
+		}
+
+		bitonic_merge(array, start, k, dir);
+		bitonic_merge(array, start + k, k, dir);
 	}
 }
-/**
- * merge - sort bitonic sequences recursively in both orders
- * @arr: array
- * @low: first element
- * @nelemnt: elements number
- * @order: 1: ascending order, 0 descending order
- */
-void merge(int arr[], int low, int nelemnt, int order)
-{
-	int mid, i;
 
-	if (nelemnt > 1)
-	{
-		mid = nelemnt / 2;
-		for (i = low; i < low + mid; i++)
-			swap(arr, i, i + mid, order);
-		merge(arr, low, mid, order);
-		merge(arr, low + mid, mid, order);
-	}
-}
 /**
- * bitonicsort - bitonic sort algorithm implementation
- * @arr: array
- * @low: first element
- * @nelemnt: number of elements
- * @order: 1: ascending order, 0 descending order
- * @size: array lenght
- */
-void bitonicsort(int arr[], int low, int nelemnt, int order, int size)
-{
-	int mid;
-
-	if (nelemnt > 1)
-	{
-		if (order >= 1)
-		{
-			printf("Merging [%i/%i] (UP):\n", nelemnt, size);
-			print_array(&arr[low], nelemnt);
-		}
-		else
-		{
-			printf("Merging [%i/%i] (DOWN):\n", nelemnt, size);
-			print_array(&arr[low], nelemnt);
-		}
-		mid = nelemnt / 2;
-		bitonicsort(arr, low, mid, 1, size);
-		bitonicsort(arr, low + mid, mid, 0, size);
-		merge(arr, low, nelemnt, order);
-		if (order <= 0)
-		{
-			printf("Result [%i/%i] (DOWN):\n", nelemnt, size);
-			print_array(&arr[low], nelemnt);
-		}
-		if (order >= 1)
-		{
-			printf("Result [%i/%i] (UP):\n", nelemnt, size);
-			print_array(&arr[low], nelemnt);
-		}
-	}
-}
-/**
- * bitonic_sort - prepare the terrain to bitonic sort algorithm
- * @array: array
- * @size: array lenght
+ * bitonic_sort - sorts an array of integers in ascending order using the
+ *                Bitonic sort algorithm
+ * @array: array to sort
+ * @size: size of the array
  */
 void bitonic_sort(int *array, size_t size)
 {
-	int order = 1;
+	size_t k;
 
-	if (!array || size < 2)
-		return;
-	bitonicsort(array, 0, size, order, size);
+	for (k = 2; k <= size; k *= 2)
+	{
+		size_t j;
+
+		for (j = k / 2; j > 0; j /= 2)
+		{
+			size_t i;
+
+			for (i = 0; i < size; i += k)
+			{
+				int dir = (i / k) % 2 == 0 ? 1 : 0;
+
+				bitonic_merge(array, i, k / 2, dir);
+			}
+		}
+	}
 }
